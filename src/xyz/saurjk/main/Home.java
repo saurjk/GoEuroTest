@@ -24,18 +24,17 @@ public class Home {
 	private static final String currentDir = System.getProperty("user.dir");
 
 	public static void main(String[] args) {
-		CITY_NAME = args[0];
-		if (Constants.DEBUG)
-			System.out.println("Entered City : " + CITY_NAME);
-
-		String jsonTextFromAPI;
 		try {
-			jsonTextFromAPI = readJSONFromAPI(CITY_NAME);
+			CITY_NAME = args[0];
+			if (Constants.DEBUG)
+				System.out.println("Entered Location : " + CITY_NAME);
+
+			String jsonTextFromAPI = readJSONFromAPI(CITY_NAME);
 			JSONArray jsonArray = new JSONArray(jsonTextFromAPI);
 			if (jsonArray.length() > 0) {
 				generateCSVFile(jsonArray);
 			} else {
-				System.out.println("City not found.");
+				System.out.println("Location not found.");
 			}
 		} catch (IOException e) {
 			if (Constants.DEBUG)
@@ -43,13 +42,16 @@ public class Home {
 		} catch (JSONException e) {
 			if (Constants.DEBUG)
 				System.out.println(e.getMessage());
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("No Input Provided.");
 		}
 	}
 
 	private static void generateCSVFile(JSONArray jsonArray) throws JSONException, IOException {
 		String csvFileName = currentDir + "\\" + CITY_NAME + ".csv";
 		FileWriter fileWriter = new FileWriter(csvFileName);
-		for (int ctr = 0; ctr < jsonArray.length(); ctr++) {
+		int jsonArrayLength = jsonArray.length();
+		for (int ctr = 0; ctr < jsonArrayLength; ctr++) {
 			JSONObject rootJSONObject = jsonArray.getJSONObject(ctr);
 			String id = rootJSONObject.getString(APIConstants.TAG_ID);
 			String name = rootJSONObject.getString(APIConstants.TAG_NAME);
@@ -63,7 +65,7 @@ public class Home {
 		}
 		fileWriter.flush();
 		fileWriter.close();
-		System.out.println("Written to file");
+		System.out.println(jsonArrayLength + " values written to file. Saved as " + csvFileName);
 	}
 
 	private static String readJSONFromAPI(String cityName) throws IOException {
